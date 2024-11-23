@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "remotetypes"
+version = "0.1.0"
+authors = [
+  { name="Tobias Diaz", email="tobias.diaz@uclm.es" },
+  { name="Jose Luis Segura", email="joseluis.segura@uclm.es"},
+]
+description = "Template for rDistributed Systems laboratory"
+requires-python = ">=3.10"
+dependencies = ['zeroc-ice']
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
+]
+license = "GPL-3.0-only"
+
+[project.scripts]
+remotetypes = "remotetypes.command_handlers:remotetypes_server"
+
+[project.optional-dependencies]
+tests = ["pytest"]
+linters = ["mypy", "pylint", "ruff"]
+
+# Tools configuration
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Enable pydocstyle too
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = ["E", "W", "F", "D"]
+ignore = ["D203", "D213"]
+
+[tool.pylint.TYPECHECK]
+ignored-classes = ["Ice"]
+
+[[tool.mypy.overrides]]
+module = [
+  "Ice",
+  "RemoteTypes"
+]
+ignore_missing_imports = true
