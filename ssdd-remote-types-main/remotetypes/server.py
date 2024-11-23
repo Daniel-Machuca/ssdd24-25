@@ -7,6 +7,7 @@ import Ice
 from remotetypes.factory import Factory
 
 
+
 class Server(Ice.Application):
     """Ice.Application for the server."""
 
