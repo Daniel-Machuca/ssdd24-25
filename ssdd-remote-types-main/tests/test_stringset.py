@@ -33,3 +33,40 @@ class TestStringSet(unittest.TestCase):
         a = StringSet()
         with self.assertRaises(ValueError):
             a.add(NON_STRING_VALUE)
+            
+class MoreTestStringSet(unittest.TestCase):
+    """created for the implementation of additional test cases"""
+    def test_empty_initialization(self):
+        a = StringSet()
+        self.assertEqual(len(a), 0)
+        
+    def test_initialization_with_strings(self):
+        a = StringSet(["a", "b", "c"])
+        self.assertEqual(len(a), 3)
+        self.assertIn("a", a)
+        self.assertIn("b", a)
+        self.assertIn("c", a)
+        
+    def test_initialization_with_duplicates(self):
+        a = StringSet(["a", "b", "a"])
+        self.assertEqual(len(a), 2)
+
+    def test_initialization_with_non_strings(self):
+        with self.assertRaises(ValueError):
+            StringSet(["a", 123, "b"])
+            
+    def test_add_ok_string(self):
+        a = StringSet()
+        a.add("hello")
+        self.assertIn("hello", a)
+        
+    def test_add_duplicate_string(self):
+        a = StringSet(["hello"])
+        a.add("hello")
+        self.assertEqual(len(a), 1)
+    
+    def test_iteration(self):
+        elements = ["one", "two", "three"]
+        a = StringSet(elements)
+        for item in a:
+            self.assertIn(item, elements)
