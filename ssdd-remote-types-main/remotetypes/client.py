@@ -1,14 +1,11 @@
 """Client for testing the remotetypes server."""
 
 import sys
-import Ice
 import os
 import json
+import Ice
 from remotetypes.factory import Factory
-from remotetypes.remotedict import RemoteDict
-from remotetypes.remotelist import RemoteList
-from remotetypes.remoteset import RemoteSet
-import RemoteTypes  # Generado por slice2py
+import RemoteTypes
 
 
 def main():
@@ -25,7 +22,7 @@ def main():
 
         print("Creating a new RemoteSet...")
         rset = factory.get(RemoteTypes.TypeName.RSet, "test_set")
-        rset = RemoteTypes.RSetPrx.checkedCast(rset)  
+        rset = RemoteTypes.RSetPrx.checkedCast(rset)
         if not rset:
             raise RuntimeError("Invalid proxy for RSet")
 
@@ -34,7 +31,6 @@ def main():
         print(f"Set contains 'item1': {rset.contains('item1')}")
         print(f"Set length: {rset.length()}")
 
-        
         print("Iterating over the set:")
         iterator = rset.iter()
         try:
@@ -42,40 +38,44 @@ def main():
                 print(f"Item: {iterator.next()}")
         except RemoteTypes.StopIteration:
             print("Finished iterating.")
-        
-        print("-------------------------------------Requirement test------------------------------------------------")
+
         print("Creating a new RemoteDict...")
-        rdict = RemoteTypes.RDictPrx.checkedCast(factory.get(RemoteTypes.TypeName.RDict, "test_dict"))
+        rdict = RemoteTypes.RDictPrx.checkedCast(
+            factory.get(RemoteTypes.TypeName.RDict, "test_dict")
+        )
         if not rdict:
             raise RuntimeError("Invalid proxy for RemoteDict.")
         rdict.setItem("key1", "value1")
         print(f"Value for 'key1': {rdict.getItem('key1')}")
         print(f"Dict length: {rdict.length()}")
-        # Crear un RemoteDict
-        rdict = RemoteTypes.RDictPrx.checkedCast(factory.get(RemoteTypes.TypeName.RDict, "test_dict"))
+        rdict = RemoteTypes.RDictPrx.checkedCast(
+            factory.get(RemoteTypes.TypeName.RDict, "test_dict")
+        )
 
-        # Añadir un elemento
         rdict.setItem("pruebajson", "pruebas")
-        json_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "test_dict.json"))
+        json_file_path = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "test_dict.json")
+        )
 
-        # Verifica que el fichero "test_dict.json" se ha creado en el sistema de archivos.
-        # Puedes revisar el contenido del fichero directamente:
-       
         with open(json_file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
-            assert data["key1"] == "value1", "Persistencia fallida: No se guardó correctamente el valor en el JSON."
-        print("Persistencia verificada: El fichero JSON contiene los datos correctamente.")
-
+            assert (
+                data["key1"] == "value1"
+            ), "Persistencia fallida: No se guardó correctamente el valor en el JSON."
+        print(
+            "Persistencia verificada: El fichero JSON contiene los datos correctamente."
+        )
 
         print("Creating a new RemoteList...")
-        rlist = RemoteTypes.RListPrx.checkedCast(factory.get(RemoteTypes.TypeName.RList, "test_list"))
+        rlist = RemoteTypes.RListPrx.checkedCast(
+            factory.get(RemoteTypes.TypeName.RList, "test_list")
+        )
         if not rlist:
             raise RuntimeError("Invalid proxy for RemoteList.")
         rlist.append("item1")
         rlist.append("item2")
         print(f"List contains 'item1': {rlist.contains('item1')}")
         print(f"List length: {rlist.length()}")
-
 
         print("Iterating over the list:")
         iterator = rlist.iter()

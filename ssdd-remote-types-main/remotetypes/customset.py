@@ -18,6 +18,11 @@ class StringSet(set):
         StringSet(iterable) -> new StringSet object
         """
         self.upper_case = force_upper_case
+        
+        if args and args[0]:
+            for i in args[0]:
+                if not isinstance(i, str):
+                    raise ValueError(f"Invalid element {i}: all elements must be strings")
         super().__init__(*args, **kwargs)
 
     def add(self, item: str) -> None:

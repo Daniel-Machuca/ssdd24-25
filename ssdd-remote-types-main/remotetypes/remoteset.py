@@ -7,7 +7,6 @@ from remotetypes.customset import StringSet
 from remotetypes.iterable import SetIterable
 
 
-
 class RemoteSet(rt.RSet):
     """Implementation of the remote interface RSet."""
 
@@ -15,7 +14,6 @@ class RemoteSet(rt.RSet):
         print(f"Initializing RemoteSet with identifier: {identifier}")
         self.identifier = identifier
         self.storage = set()
-
 
     def identifier(self, current: Optional[Ice.Current] = None) -> str:
         """Return the identifier of the object."""
@@ -44,12 +42,11 @@ class RemoteSet(rt.RSet):
 
     def iter(self, current: Optional[Ice.Current] = None) -> rt.IterablePrx:
         """Create an iterable object."""
-        current_hash = hash(frozenset(self.storage)) 
+        current_hash = hash(frozenset(self.storage))
         iterable = SetIterable(self.storage, current_hash)
 
         proxy = current.adapter.addWithUUID(iterable)
         return rt.IterablePrx.uncheckedCast(proxy)
-
 
     def add(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Add a new string to the StringSet."""
