@@ -33,11 +33,11 @@ class Factory(rt.Factory):
             return rt.RTypePrx.uncheckedCast(proxy)
 
         print(f"Creating new object of type {type_name}")
-        if type_name == rt.type_name.RDict:
+        if type_name == rt.TypeName.RDict:
             obj = RemoteDict(identifier, storage_file=f"{identifier}.json")
-        elif type_name == rt.type_name.RList:
+        elif type_name == rt.TypeName.RList:
             obj = RemoteList(identifier, storage_file=f"{identifier}.json")
-        elif type_name == rt.type_name.RSet:
+        elif type_name == rt.TypeName.RSet:
             obj = RemoteSet(identifier)
         else:
             raise rt.TypeError(f"Unknown type_name: {type_name}")

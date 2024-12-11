@@ -23,12 +23,12 @@ class RemoteList(rt.RList):
         """Return the identifier of the object."""
         return self._identifier
 
-    def append(self, item: str) -> None:
+    def append(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Add an item to the end of the list."""
         self.storage.append(item)
         self._persist_to_file()
 
-    def pop(self, index: Optional[int] = None) -> str:
+    def pop(self, index: Optional[int] = None, current: Optional[Ice.Current] = None) -> str:
         """
         Remove and return an item at the specified index.
         If no index is specified, remove and return the last item.
@@ -43,7 +43,7 @@ class RemoteList(rt.RList):
             self._persist_to_file()
 
     # pylint: disable=invalid-name
-    def getItem(self, index: int) -> str:
+    def getItem(self, index: int, current: Optional[Ice.Current] = None) -> str:
         """Retrieve an item at the specified index."""
         try:
             return self.storage[index]
@@ -70,7 +70,7 @@ class RemoteList(rt.RList):
         except (FileNotFoundError, json.JSONDecodeError):
             self.storage = []
 
-    def remove(self, item: str) -> None:
+    def remove(self, item: str, current: Optional[Ice.Current] = None) -> None:
         """Remove an item from the list."""
         try:
             self.storage.remove(item)
@@ -78,11 +78,11 @@ class RemoteList(rt.RList):
             raise rt.KeyError(item) from error
         self._persist_to_file()
 
-    def length(self) -> int:
+    def length(self, current: Optional[Ice.Current] = None) -> int:
         """Return the number of elements in the list."""
         return len(self.storage)
 
-    def contains(self, item: str) -> bool:
+    def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
         """Check if an item exists in the list."""
         return item in self.storage
 

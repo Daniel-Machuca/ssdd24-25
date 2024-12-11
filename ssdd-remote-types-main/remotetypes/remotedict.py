@@ -23,19 +23,19 @@ class RemoteDict(rt.RDict):
         return self._identifier
 
     # pylint: disable=invalid-name
-    def setItem(self, key: str, item: str) -> None:
+    def setItem(self, key: str, item: str, current: Optional[Ice.Current] = None) -> None:
         """Set a value for a given key in the dictionary."""
         self.storage[key] = item
         self._persist_to_file()
 
     # pylint: disable=invalid-name
-    def getItem(self, key: str) -> str:
+    def getItem(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Retrieve the value for a given key."""
         if key not in self.storage:
             raise rt.KeyError(key)
         return self.storage[key]
 
-    def pop(self, key: str) -> str:
+    def pop(self, key: str, current: Optional[Ice.Current] = None) -> str:
         """Remove and return the value associated with a given key."""
         if key not in self.storage:
             raise rt.KeyError(key)
@@ -73,15 +73,15 @@ class RemoteDict(rt.RDict):
         del self.storage[item]
         self._persist_to_file()
 
-    def length(self) -> int:
+    def length(self, current: Optional[Ice.Current] = None) -> int:
         """Return the number of elements in the dictionary."""
         return len(self.storage)
 
-    def contains(self, item: str) -> bool:
+    def contains(self, item: str, current: Optional[Ice.Current] = None) -> bool:
         """Check if a key exists in the dictionary."""
         return item in self.storage
 
-    def hash(self) -> int:
+    def hash(self, current: Optional[Ice.Current] = None) -> int:
         """Calculate a hash based on the dictionary's content."""
         contents = list(self.storage.items())
         contents.sort()
