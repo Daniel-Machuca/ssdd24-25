@@ -1,15 +1,31 @@
 import json
-import os
 from kafka import KafkaProducer, KafkaConsumer
 import Ice
 import RemoteTypes
 
-#kafka config
-INPUT_TOPIC = os.getenv("KAFKA_INPUT_TOPIC", "main_topic")
-OUTPUT_TOPIC = os.getenv("KAFKA_OUTPUT_TOPIC", "results")
-BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092").split(",")
+def load_config(file_path):
+    """Reads the configuration from a .txt file and returns it as a dictionary"""
+    config = {}
+    try:
+        with open(file_path, "r") as file:
+            for line in file:
+                if line.strip():
+                    key, value = line.strip().split("=", 1)
+                    config[key.strip()] = value.strip()
+    except FileNotFoundError:
+        raise Exception(f"Configuration file not found: {file_path}")
+    return config
 
-ICE_CONFIG = ["remotetypes:default -h remotetypes -p 10000"]
+config = load_config("configuration.txt")
+
+KAFKA_INPUT_TOPIC = config["KAFKA_INPUT_TOPIC"]
+KAFKA_OUTPUT_TOPIC = config["KAFKA_OUTPUT_TOPIC"]
+KAFKA_BOOTSTRAP_SERVERS = config["KAFKA_BOOTSTRAP_SERVERS"].split(",")
+CONSUMER_GROUP = config["CONSUMER_GROUP"]
+AUTO_OFFSET_RESET = config["AUTO_OFFSET_RESET"]
+
+ICE_CONFIG = [config["ICE_CONFIG"]]
+
 ice_communicator = Ice.initialize(ICE_CONFIG)
 
 try:
@@ -21,17 +37,16 @@ try:
 except Exception as exception:
     print(f"Could not connect to the factory: {exception}")
 
-
 producer = KafkaProducer(
-    bootstrap_servers=BOOTSTRAP_SERVERS,
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     value_serializer=lambda v: json.dumps(v).encode("utf-8")
 )
 
 consumer = KafkaConsumer(
-    INPUT_TOPIC,
-    bootstrap_servers=BOOTSTRAP_SERVERS,
-    group_id="operation_clients",
-    auto_offset_reset="earliest",
+    KAFKA_INPUT_TOPIC,
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+    group_id=CONSUMER_GROUP,
+    auto_offset_reset=AUTO_OFFSET_RESET,
     value_deserializer=lambda v: json.loads(v.decode("utf-8"))
 )
 
@@ -130,7 +145,7 @@ def process_operation(operation):
 def main():
     """kafkaclient main point"""
     print("--------------------------------------------------------------")
-    print(f" Listening to messages in the topic '{INPUT_TOPIC}'...")
+    print(f" Listening to messages in the topic '{KAFKA_INPUT_TOPIC}'...")
     print("---------------------------------------------------------------")
     try:
         for message in consumer:
@@ -141,7 +156,7 @@ def main():
                         "id": event.get("id"),
                         "status": "error",
                         "error": "Invalid message format. Missing 'operations'"}
-                    producer.send(OUTPUT_TOPIC, {"responses": [error_response]})
+                    producer.send(KAFKA_OUTPUT_TOPIC, {"responses": [error_response]})
                     producer.flush() 
                     continue
 
@@ -150,7 +165,7 @@ def main():
                     response = process_operation(operation)
                     responses.append(response)
 
-                producer.send(OUTPUT_TOPIC, {"responses": responses})
+                producer.send(KAFKA_OUTPUT_TOPIC, {"responses": responses})
                 producer.flush()
                 print(f"Responses sent: {responses}")
 

@@ -1,0 +1,6 @@
+KAFKA_INPUT_TOPIC=main_topic
+KAFKA_OUTPUT_TOPIC=results
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+ICE_CONFIG=remotetypes:default -h remotetypes -p 10000
+CONSUMER_GROUP=operation_clients
+AUTO_OFFSET_RESET=earliest
