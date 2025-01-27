@@ -46,9 +46,8 @@ consumer = KafkaConsumer(
     KAFKA_INPUT_TOPIC,
     bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
     group_id=CONSUMER_GROUP,
-    auto_offset_reset=AUTO_OFFSET_RESET,
-    value_deserializer=lambda v: json.loads(v.decode("utf-8"))
-)
+    auto_offset_reset=AUTO_OFFSET_RESET)
+
 
 processed_ids = set()
     
@@ -150,14 +149,24 @@ def main():
     try:
         for message in consumer:
             try:
-                event = message.value
+               
+                raw_message = message.value
+                try:
+                    event = json.loads(raw_message.decode('utf-8'))
+                except json.JSONDecodeError as not_json:
+                    print(f"Invalid JSON received: {raw_message}. Error: {not_json}")
+                    print(f"ignoring message...")
+                    continue  
+
                 if "operations" not in event:
+                    print(f"Invalid message format: {event}")
                     error_response = {
-                        "id": event.get("id"),
+                        "id": event.get("id", None),
                         "status": "error",
-                        "error": "Invalid message format. Missing 'operations'"}
+                        "error": "Invalid message format. Missing 'operations'."
+                    }
                     producer.send(KAFKA_OUTPUT_TOPIC, {"responses": [error_response]})
-                    producer.flush() 
+                    producer.flush()
                     continue
 
                 responses = []
@@ -170,10 +179,10 @@ def main():
                 print(f"Responses sent: {responses}")
 
             except Exception as exception:
-                print(f"Error processing message: {exception}")
+                print(f"Unexpected error processing message: {exception}")
 
     except KeyboardInterrupt:
-        print("\n client shutdown")
+        print("\nClient shutdown")
     finally:
         consumer.close()
         ice_communicator.destroy()
