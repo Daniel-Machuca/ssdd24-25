@@ -38,9 +38,7 @@ except Exception as exception:
     print(f"Could not connect to the factory: {exception}")
 
 producer = KafkaProducer(
-    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
-    value_serializer=lambda v: json.dumps(v).encode("utf-8")
-)
+    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS)
 
 consumer = KafkaConsumer(
     KAFKA_INPUT_TOPIC,
@@ -142,44 +140,44 @@ def process_operation(operation):
 
 
 def main():
-    """kafkaclient main point"""
+    """KafkaClient main entry point"""
     print("--------------------------------------------------------------")
-    print(f" Listening to messages in the topic '{KAFKA_INPUT_TOPIC}'...")
+    print(f"Listening to messages in the topic '{KAFKA_INPUT_TOPIC}'...")
     print("---------------------------------------------------------------")
     try:
         for message in consumer:
             try:
-               
-                raw_message = message.value
-                try:
-                    event = json.loads(raw_message.decode('utf-8'))
-                except json.JSONDecodeError as not_json:
-                    print(f"Invalid JSON received: {raw_message}. Error: {not_json}")
-                    print(f"ignoring message...")
-                    continue  
+                raw_message = message.value.decode("utf-8")
 
-                if "operations" not in event:
-                    print(f"Invalid message format: {event}")
-                    error_response = {
-                        "id": event.get("id", None),
-                        "status": "error",
-                        "error": "Invalid message format. Missing 'operations'."
-                    }
-                    producer.send(KAFKA_OUTPUT_TOPIC, {"responses": [error_response]})
-                    producer.flush()
-                    continue
+                if "'" in raw_message and '"' not in raw_message:
+                    raw_message = raw_message.replace("'", '"')
+
+                events = json.loads(raw_message)
+
+                if not isinstance(events, list):
+                    raise ValueError(f"Invalid message format (not a list): {events}")
 
                 responses = []
-                for operation in event["operations"]:
-                    response = process_operation(operation)
-                    responses.append(response)
+                for operation in events:
+                    if not isinstance(operation, dict):
+                        print(f"Invalid operation format (not a dict): {operation}")
+                        continue
+                    responses.append(process_operation(operation))
 
-                producer.send(KAFKA_OUTPUT_TOPIC, {"responses": responses})
-                producer.flush()
-                print(f"Responses sent: {responses}")
+                if responses:
+                    serialized_responses = json.dumps({"responses": responses}).encode("utf-8")
+                    producer.send(KAFKA_OUTPUT_TOPIC, serialized_responses)
+                    producer.flush()
+                    print(f"Responses sent: {responses}")
+                else:
+                    print("No valid responses to send.")
 
-            except Exception as exception:
-                print(f"Unexpected error processing message: {exception}")
+            except json.JSONDecodeError as error:
+                print(f"Invalid JSON received: {message.value}. Error: {error}")
+            except ValueError as error:
+                print(f"Error in message format: {error}")
+            except Exception as error:
+                print(f"Error processing message: {error}")
 
     except KeyboardInterrupt:
         print("\nClient shutdown")
