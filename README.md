@@ -66,5 +66,7 @@ you are good to go
 
 the way i have been executing the program is creating a venv and following the steps i just explained and, in a terminal y execute the kafkaClient.py and in another terminal I execute the proudcer.py:
 
+For the new update(exception control), i only commited the kafkaClient.py 
+
 
 
