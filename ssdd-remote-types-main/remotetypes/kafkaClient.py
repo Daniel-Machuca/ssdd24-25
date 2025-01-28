@@ -165,7 +165,7 @@ def main():
                     responses.append(process_operation(operation))
 
                 if responses:
-                    serialized_responses = json.dumps({"responses": responses}).encode("utf-8")
+                    serialized_responses = json.dumps(responses).encode("utf-8")
                     producer.send(KAFKA_OUTPUT_TOPIC, serialized_responses)
                     producer.flush()
                     print(f"Responses sent: {responses}")
